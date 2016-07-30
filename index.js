@@ -26,7 +26,7 @@ const ip = require('ip');
  * original dependences
  */
 const Drive = require("./lib/Drive"),
-      drive = new Drive();
+    drive = new Drive();
 
 /**
  * InetRC クラス 
@@ -61,16 +61,12 @@ class InetRC {
         this.logpath = logpath;
 
         // host.jsonを作成・書き換えをする。
-        fs.writeFileSync( `${___dirname}/public/js/host.json`, JSON.stringify({ host: this.host, ip: this.ip }));
+        fs.writeFileSync(`${__dirname}/public/js/host.json`, JSON.stringify({ host: this.host, ip: this.ip }));
 
 
     }
 
     listen() {
-        // HTTPサーバーを立てる
-        this.server.listen(this.port);
-        console.log(`HTTP server is listening ${this.host}:${this.port}`);
-
 
         switch (this.mode) {
             case "web":
@@ -81,21 +77,32 @@ class InetRC {
                     break;
                 }
                 let app = this.app;
-                app.use(express.static(`${___dirname}/public`));
+                app.use(express.static(`${__dirname}/public`));
                 app.get('/', function (req, res) {
-                    res.sendfile(`${___dirname}/public/index.html`);
+                    res.sendfile(`${__dirname}/public/index.html`);
                 });
-                /*
-                app.use('/public/css', express.static('/public/css'));
-                app.use('/public/js', express.static('/public/js'));
-                */
                 console.log("web mode! ");
+
+                // HTTPサーバーを立てる
+                this.server.listen(this.port);
+                console.log(`HTTP server is listening ${this.host}:${this.port}`);
                 this.socketioListen();
                 break;
             case "ps3":
                 console.log("ps3 mode! ");
-                //socketioの場合,
-                this.socketioListen();
+                //socketioの場合,UDPとwebsocketが選択可能。
+                switch (this.nettype) {
+                    case "socketio":
+                        // HTTPサーバーを立てる
+                        this.server.listen(this.port);
+                        console.log(`HTTP server is listening ${this.host}:${this.port}`);
+                        this.socketioListen();
+                        break;
+                    case "udp":
+                        this.udpListen();
+                        break;
+
+                }
 
         }
 
@@ -109,7 +116,7 @@ class InetRC {
         let controler = this.controler;
         // 接続確立後の通信処理部分を定義
         io.sockets.on('connection', function (socket) {
-           //ここのthisはsocketioのthisになってしまう。
+            //ここのthisはsocketioのthisになってしまう。
 
             // クライアントからサーバーへ メッセージ送信ハンドラ
             socket.on('steer', function (data) {
@@ -120,7 +127,7 @@ class InetRC {
                  *  STEER :【STEER STATUS】
                  * }
                  */
-                
+
                 let res = controler.steer(data);
                 // サーバーからクライアントへ メッセージを送り返し
                 io.sockets.emit('steer', res.steer);
@@ -180,16 +187,19 @@ class InetRC {
         socket.on("message", function (msg, rinfo) {
             /**
             * msg = [key,value]
-            * keyはsteer or axel 
+            * keyは1,2のうちどちらか。
+            1:steer,2:axel
             */
             let res = {};
             switch (msg[0]) {
-                case "steer":
-                    res = controler.axel(msg[1]);
-                    break;
-                case "axel":
+                case 1:
                     res = controler.steer(msg[1]);
                     break;
+                case 2:
+                    res = controler.axel(msg[1]);
+                    break;
+                default :
+                    console.log("おっぱいなんだなぁ");
             }
             //ログデータを書き出し。
             //あとでやる

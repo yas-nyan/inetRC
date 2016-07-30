@@ -6,5 +6,5 @@ var host = process.env.host;
 var port = process.env.device;
 var logpath = process.env.logpath;
 
-var inetRC = new InetRC();
+var inetRC = new InetRC(mode,nettype,host,port,logpath);
 inetRC.listen();
