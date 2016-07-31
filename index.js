@@ -21,12 +21,12 @@ const express = require('express');
 const dgram = require("dgram");
 const fs = require('fs');
 const ip = require('ip');
+const Udping = require('./lib/udping_e');
 
 /**
  * original dependences
  */
-const Drive = require("./lib/Drive"),
-    drive = new Drive();
+const Drive = require("./lib/Drive");
 
 /**
  * InetRC クラス 
@@ -56,6 +56,24 @@ class InetRC {
         //Server
         this.app = express();
         this.server = http.createServer(this.app);
+        //もしPS3モード以外なら、
+        if (this.mode !== "web") {
+            //Udpingのサーバーをスタートさせる。
+            this.udping = new Udping({
+                //サーバーorクライアント クライアントが初期値。
+                mode: "server",
+                //サーバーのホストネーム IP 
+                host: this.host,
+                port: 55555,
+                execTIme: new Date().getTime(),
+                savepath: `./${this.execTIme}udping_result.txt`,
+                //何ミリ秒おきに送るか タイムアウト時間はその二倍
+                wait: 1000
+            });
+            //udpingのタイムアウト確認はここで行う。
+            //this.emergencyStop();
+            //this.udping.server.timeoutCheck = setInterval(this.controler.stop,5000);
+        }
 
         //ログデータのパス
         this.logpath = logpath;
@@ -197,7 +215,7 @@ class InetRC {
                 case 2:
                     res = controler.axel(msg[1]);
                     break;
-                default :
+                default:
                     console.log("invaild");
                     break;
             }
@@ -210,7 +228,36 @@ class InetRC {
 
     }
 
+    emergencyStop(controler) {
+        controler.axel(150);
+        controler.steer(150);
+        console.log("stop");
+
+        /*
+        //参照渡し。
+        let udping = this.udping;
+        console.log(udping);
+        let controler = this.controler;
+        let wait = udping.server.wait;
+        
+
+        setInterval(function () {
+            console.log(udping.server.timeoutFlag);
+            if (!udping.server.timeoutFlag) {
+                //trueが来れば止める
+                //安全に停止できる値ををthis.controlerに送る
+                controler.axel(150);
+                controler.steer(150);
+                console.log("stop");
+
+            } else {
+                return;
+            }
+
+        }, wait);
+        */
+    }
+
 
 }
-
 module.exports = InetRC;
