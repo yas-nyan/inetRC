@@ -136,7 +136,7 @@ class InetRC {
         io.sockets.on('connection', function (socket) {
             //ここのthisはsocketioのthisになってしまう。
 
-            // クライアントからサーバーへ メッセージ送信ハンドラ
+            // クライアントからサーバーへ メッセージ送信イベント
             socket.on('steer', function (data) {
                 /**
                  * res  = {
@@ -154,7 +154,7 @@ class InetRC {
                 //あとでやる
             });
 
-            // クライアントからサーバーへ メッセージ送信ハンドラ
+            // クライアントからサーバーへ メッセージ送信イベント
             socket.on('axel', function (data) {
                 let res = controler.axel(data);
                 /**

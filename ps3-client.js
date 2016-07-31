@@ -37,8 +37,6 @@ const env = {
 }
 
 
-
-
 const client = new Client (env.mode,env.nettype,env.s_host,env.s_port);
 
 //通信を開始する。
@@ -54,24 +52,24 @@ controller.on('right:move', function (x, y) {
 
     if (data < 150) {
         env.axelstatus = "forward";
-        console.log(env.axelstatus);
+        //console.log(env.axelstatus);
     } else if (data > 159) {
         env.axelstatus = "back";
-        console.log(env.axelstatus);
+        //console.log(env.axelstatus);
     } else {
         env.axelstatus = "stop";
-        console.log(env.axelstatus);
+        //console.log(env.axelstatus);
     }
     client.send("axel",data);
-    console.log("R/ X:" + x.x + "Y:" + x.y);
+    //console.log("R/ X:" + x.x + "Y:" + x.y);
 });
 
 controller.on('left:move', function (x, y) {
     //x.yの0~255のデータを100~200のデータに変換して、切り捨て。
     let data = Math.floor(x.x * 100 / 255 + (env.setting.steer - 50));
-    console.log(data);
+    //console.log(data);
     client.send("steer",data);
-    console.log("R/ X:" + x.x + "Y:" + x.y);
+    //console.log("R/ X:" + x.x + "Y:" + x.y);
 });
 
 //ボタン操作をbind
@@ -92,14 +90,14 @@ function brake() {
         client.send("axel", 150);
     }
     env.axelstatus = "stop";
-    console.log(env.axelstatus);
+    //console.log(env.axelstatus);
 }
 
 
 function axel() {
     client.send("axel", env.setting.axel);
     env.axelstatus = 'forward';
-    console.log(env.axelstatus);
+    //console.log(env.axelstatus);
 }
 
 function back() {
@@ -112,7 +110,7 @@ function back() {
     client.send("axel", 160);
     client.send("axel", 162);
     env.axelstatus = "back";
-    console.log(env.axelstatus);
+    //console.log(env.axelstatus);
 }
 
 
@@ -141,5 +139,5 @@ function steerLeft () {
 function steerRight () {
     //1だけ上げます。(右より)
     env.setting.steer++;
-    console.log("NEUTRAL_STEER:" +env.setting.steer);
+    console.log("NEUTRAL_STEER:" + env.setting.steer);
 }
