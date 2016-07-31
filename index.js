@@ -138,7 +138,6 @@ class InetRC {
 
             // クライアントからサーバーへ メッセージ送信ハンドラ
             socket.on('axel', function (data) {
-                console.log(typeof controler.axel());
                 let res = controler.axel(data);
                 /**
                  * res  = {
@@ -155,7 +154,7 @@ class InetRC {
 
             });
         });
-        console.log("socketio server  is listening");
+        console.log("socketio server is listening");
     }
 
     udpListen() {
@@ -199,7 +198,8 @@ class InetRC {
                     res = controler.axel(msg[1]);
                     break;
                 default :
-                    console.log("おっぱいなんだなぁ");
+                    console.log("invaild");
+                    break;
             }
             //ログデータを書き出し。
             //あとでやる
