@@ -38,3 +38,7 @@ jspm_packages
 
 # host系
 public/js/host.json
+
+# DS_store
+*/.DS_Store
+.DS_Store
