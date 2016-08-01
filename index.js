@@ -58,7 +58,7 @@ class InetRC {
         this.server = http.createServer(this.app);
 
         //ログデータのパス
-        this.logpath = logpath || `./${Date.now()}inetRC_result.txt`;
+        this.logpath = logpath || `./result/${Date.now()}_inetRC_result.txt`;
         //書き込みをオープンする
         fs.writeFileSync(this.logpath, `${Date.now()}\n`, "utf8");
 
@@ -72,7 +72,7 @@ class InetRC {
                 host: this.host,
                 port: 55555,
                 execTIme: new Date().getTime(),
-                savepath: `./${Date.now()}udping_result.txt`,
+                savepath: `./result/${Date.now()}udping_result.txt`,
                 //何ミリ秒おきに送るか タイムアウト時間はその二倍
                 wait: 1000,
                 //走行ログデータのパス
