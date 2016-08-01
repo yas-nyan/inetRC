@@ -56,6 +56,12 @@ class InetRC {
         //Server
         this.app = express();
         this.server = http.createServer(this.app);
+
+        //ログデータのパス
+        this.logpath = logpath || `./${Date.now()}inetRC_result.txt`;
+        //書き込みをオープンする
+        fs.writeFileSync(this.logpath, `${Date.now()}\n`, "utf8");
+
         //もしPS3モード以外なら、
         if (this.mode !== "web") {
             //Udpingのサーバーをスタートさせる。
@@ -66,17 +72,18 @@ class InetRC {
                 host: this.host,
                 port: 55555,
                 execTIme: new Date().getTime(),
-                savepath: `./${this.execTIme}udping_result.txt`,
+                savepath: `./${Date.now()}udping_result.txt`,
                 //何ミリ秒おきに送るか タイムアウト時間はその二倍
-                wait: 1000
+                wait: 1000,
+                //走行ログデータのパス
+                logpath:this.logpath
             });
             //udpingのタイムアウト確認はここで行う。
             //this.emergencyStop();
             //this.udping.server.timeoutCheck = setInterval(this.controler.stop,5000);
         }
 
-        //ログデータのパス
-        this.logpath = logpath;
+        
 
         // host.jsonを作成・書き換えをする。
         fs.writeFileSync(`${__dirname}/public/js/host.json`, JSON.stringify({ host: this.host, ip: this.ip }));
@@ -90,7 +97,7 @@ class InetRC {
             case "web":
                 //web操作の場合、
                 if (this.nettype !== "socketio") {
-                    console.error("web mode is using socketio only.");
+                    console.error("[ERR] web mode is using socketio only.");
                     process.exit();
                     break;
                 }
@@ -99,21 +106,27 @@ class InetRC {
                 app.get('/', function (req, res) {
                     res.sendfile(`${__dirname}/public/index.html`);
                 });
-                console.log("web mode! ");
+                console.log(`[INETRC] ${Date.now()}  web mode! `);
+                fs.appendFile(this.logpath, `[INETRC] web mode! \n`);
 
                 // HTTPサーバーを立てる
                 this.server.listen(this.port);
-                console.log(`HTTP server is listening ${this.host}:${this.port}`);
+                let logtext = `[INETRC] ${Date.now()}  HTTP server is listening ${this.host}:${this.port}`
+                console.log(logtext);
+                fs.appendFile(this.logpath, `${logtext}\n`);
                 this.socketioListen();
                 break;
             case "ps3":
-                console.log("ps3 mode! ");
+                console.log(`[INETRC] ${Date.now()}  ps3 mode! `);
                 //socketioの場合,UDPとwebsocketが選択可能。
                 switch (this.nettype) {
                     case "socketio":
                         // HTTPサーバーを立てる
                         this.server.listen(this.port);
-                        console.log(`HTTP server is listening ${this.host}:${this.port}`);
+                        let logtext = `[INETRC] ${Date.now()}  HTTP server is listening ${this.host}:${this.port}`;
+                        console.log(logtext);
+                        fs.appendFile(this.logpath, `${logtext}\n`);
+
                         this.socketioListen();
                         break;
                     case "udp":
@@ -132,6 +145,7 @@ class InetRC {
         let io = socketio.listen(this.server);
         //子の関数の中でthis内のものを使いたいので、ここで変数に入れておく。
         let controler = this.controler;
+        let logpath = this.logpath;
         // 接続確立後の通信処理部分を定義
         io.sockets.on('connection', function (socket) {
             //ここのthisはsocketioのthisになってしまう。
@@ -149,6 +163,10 @@ class InetRC {
                 let res = controler.steer(data);
                 // サーバーからクライアントへ メッセージを送り返し
                 io.sockets.emit('steer', res.steer);
+                let logtext = `[INETRC] ${Date.now()} STEER: ${res.steer} AXEL: ${res.axel}`;
+                console.log(logtext);
+                fs.appendFile(logpath, `${logtext}\n`);
+
 
                 //ログデータを書き出し。
                 //あとでやる
@@ -166,13 +184,19 @@ class InetRC {
                  */
                 // サーバーからクライアントへ メッセージを送り返し
                 io.sockets.emit('axel', res.axel);
+                let logtext = `[INETRC] ${Date.now()} STEER: ${res.steer} AXEL: ${res.axel}`;
+                console.log(logtext);
+                fs.appendFile(logpath, `${logtext}\n`);
 
                 //ログデータを書き出し。
                 //あとでやる
 
             });
         });
-        console.log("socketio server is listening");
+        let logtext = `[INETRC] ${Date.now()}  socketio server is listening`;
+        console.log(logtext);
+        fs.appendFile(logpath, `${logtext}\n`);
+
     }
 
     udpListen() {
@@ -180,13 +204,16 @@ class InetRC {
         let socket = dgram.createSocket("udp4");
         //子の関数の中でthis内のものを使いたいので、ここで変数に入れておく。
         let controler = this.controler;
+        let logpath = this.logpath;
         //待ち受ける
         socket.bind(this.port, this.host);
         //受信状態になる
         socket.on("listening", function () {
             let address = socket.address();
-            console.log("udp socket is listening " +
-                address.address + ":" + address.port);
+            let logtext = `[INETRC] ${Date.now()} UDP socket is listening ${address.address}:${address.port}`
+            console.log(logtext);
+            fs.appendFile(logpath, `${logtext}\n`);
+            
         });
 
 
@@ -194,6 +221,9 @@ class InetRC {
         //エラー処理　UDP周りでエラーが起きたらこれ
         socket.on("error", function (err) {
             console.log("server error:\n" + err.stack);
+            let logtext = `[INETRC] ${Date.now()}  server error:\n err.stack`
+            console.log(logtext);
+            fs.appendFile(this.logpath, `${logtext}\n`);
             socket.close();
         });
 
@@ -221,6 +251,9 @@ class InetRC {
             }
             //ログデータを書き出し。
             //あとでやる
+            let logtext = `[INETRC] ${Date.now()} STEER: ${res.steer} AXEL: ${res.axel}`;
+            console.log(logtext);
+            fs.appendFile(logpath, `${logtext}\n`);
 
         })
 
@@ -232,6 +265,9 @@ class InetRC {
         controler.axel(150);
         controler.steer(150);
         console.log("stop");
+        let logtext = `[INETRC]  ${Date.now()} !!EMAGENCY STOP!! STEER: ${res.steer} AXEL: ${res.axel}`;
+        console.log(logtext);
+        fs.appendFile(logpath, `${logtext}\n`);
 
         /*
         //参照渡し。
