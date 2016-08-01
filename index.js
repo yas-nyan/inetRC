@@ -78,9 +78,6 @@ class InetRC {
                 //走行ログデータのパス
                 logpath:this.logpath
             });
-            //udpingのタイムアウト確認はここで行う。
-            //this.emergencyStop();
-            //this.udping.server.timeoutCheck = setInterval(this.controler.stop,5000);
         }
 
         
@@ -259,39 +256,6 @@ class InetRC {
 
 
 
-    }
-
-    emergencyStop(controler) {
-        controler.axel(150);
-        controler.steer(150);
-        console.log("stop");
-        let logtext = `[INETRC]  ${Date.now()} !!EMAGENCY STOP!! STEER: ${res.steer} AXEL: ${res.axel}`;
-        console.log(logtext);
-        fs.appendFile(logpath, `${logtext}\n`);
-
-        /*
-        //参照渡し。
-        let udping = this.udping;
-        console.log(udping);
-        let controler = this.controler;
-        let wait = udping.server.wait;
-        
-
-        setInterval(function () {
-            console.log(udping.server.timeoutFlag);
-            if (!udping.server.timeoutFlag) {
-                //trueが来れば止める
-                //安全に停止できる値ををthis.controlerに送る
-                controler.axel(150);
-                controler.steer(150);
-                console.log("stop");
-
-            } else {
-                return;
-            }
-
-        }, wait);
-        */
     }
 
 
