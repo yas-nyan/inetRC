@@ -45,3 +45,4 @@ public/js/host.json
 
 # result系
 *.txt
+result
