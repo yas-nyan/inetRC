@@ -73,8 +73,8 @@ class InetRC {
                 port: 55555,
                 execTIme: new Date().getTime(),
                 savepath: `./result/${Date.now()}udping_result.txt`,
-                //何ミリ秒おきに送るか タイムアウト時間はその二倍
-                wait: 1000,
+                //何ミリ秒おきに送るか 
+                wait: 1500,
                 //走行ログデータのパス
                 logpath:this.logpath
             });
