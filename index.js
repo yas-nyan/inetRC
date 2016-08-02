@@ -154,7 +154,7 @@ class InetRC {
         let logpath = this.logpath;
 
         //遅延生成用
-        let deley = this.delay;
+        let delay = this.delay;
         // 接続確立後の通信処理部分を定義
         io.sockets.on('connection', function (socket) {
             //ここのthisはsocketioのthisになってしまう。
@@ -170,20 +170,22 @@ class InetRC {
                  */
                 //遅延を作る。
                 if (delay.flag) {
-                    setTimeout(function () { }, delay.time);
+                    setTimeout(function () {
+                        console.log(`delay:${delay.time}`);
+                        sendMsg();
+                    }, delay.time);
+                } else {
+                    sendMsg();
                 }
+                function sendMsg() {
+                    let res = controler.steer(data);
+                    // サーバーからクライアントへ メッセージを送り返し
+                    io.sockets.emit('steer', res.steer);
+                    let logtext = `[INETRC] ${Date.now()} STEER: ${res.steer} AXEL: ${res.axel}`;
+                    console.log(logtext);
+                    fs.appendFile(logpath, `${logtext}\n`);
 
-
-                let res = controler.steer(data);
-                // サーバーからクライアントへ メッセージを送り返し
-                io.sockets.emit('steer', res.steer);
-                let logtext = `[INETRC] ${Date.now()} STEER: ${res.steer} AXEL: ${res.axel}`;
-                console.log(logtext);
-                fs.appendFile(logpath, `${logtext}\n`);
-
-
-                //ログデータを書き出し。
-                //あとでやる
+                }
             });
 
             // クライアントからサーバーへ メッセージ送信イベント
@@ -198,18 +200,23 @@ class InetRC {
                  */
                 //遅延を作る。
                 if (delay.flag) {
-                    setTimeout(function () { console.log(`delay:${delay.time}`) }, delay.time);
+                    setTimeout(function () {
+                        console.log(`delay:${delay.time}`);
+                        sendMsg();
+                    }, delay.time);
+                } else {
+                    sendMsg();
                 }
 
+                function sendMsg() {
+                    // サーバーからクライアントへ メッセージを送り返し
+                    io.sockets.emit('axel', res.axel);
+                    let logtext = `[INETRC] ${Date.now()} STEER: ${res.steer} AXEL: ${res.axel}`;
+                    console.log(logtext);
+                    fs.appendFile(logpath, `${logtext}\n`);
 
-                // サーバーからクライアントへ メッセージを送り返し
-                io.sockets.emit('axel', res.axel);
-                let logtext = `[INETRC] ${Date.now()} STEER: ${res.steer} AXEL: ${res.axel}`;
-                console.log(logtext);
-                fs.appendFile(logpath, `${logtext}\n`);
 
-                //ログデータを書き出し。
-                //あとでやる
+                }
 
             });
         });
@@ -262,10 +269,14 @@ class InetRC {
             */
             //遅延を作る。
             if (delay.flag) {
-                setTimeout(function () { 
+                //遅延設定がある時
+                setTimeout(function () {
                     sendMsg();
                     console.log(`delay:${delay.time}`);
                 }, delay.time);
+            } else {
+                //遅延設定が無い時。
+                sendMsg();
             }
 
 
