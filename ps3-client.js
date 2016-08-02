@@ -33,11 +33,12 @@ const env = {
         steer:150,
         axel:146
     },
-    axelstatus: "stop"
+    axelstatus: "stop",
+    wait : process.env.wait || 1000
 }
 
 
-const client = new Client (env.mode,env.nettype,env.s_host,env.s_port);
+const client = new Client (env.mode,env.nettype,env.s_host,env.s_port,env.wait);
 
 //通信を開始する。
 client.stanby();
@@ -82,6 +83,9 @@ controller.on("dpadUp:press",axelUp);
 controller.on("dpadDown:press",axelDown);
 controller.on("dpadRight:press",steerRight);
 controller.on("dpadLeft:press",steerLeft);
+
+//UDPINGの通信を切断する(実験用)
+controller.on("select:press",cutUDPING);
 
 function brake() {
     if (env.axelstatus == "forward") {
@@ -140,4 +144,10 @@ function steerRight () {
     //1だけ上げます。(右より)
     env.setting.steer++;
     console.log("NEUTRAL_STEER:" + env.setting.steer);
+}
+
+//UDPINGの通信をカットします（デバッグ用）
+function cutUDPING (){
+    client.udping.client.stop();
+    console.log(`[UDPING] ${Date.now()} cut connection`);
 }

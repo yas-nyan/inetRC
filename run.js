@@ -7,6 +7,7 @@ var port = process.env.device;
 var logpath = process.env.logpath;
 var wait = process.env.wait;
 var delay = process.env.delay;
+var cut = process.env.cut;
 
-var inetRC = new InetRC(mode,nettype,host,port,logpath,wait,delay);
+var inetRC = new InetRC(mode,nettype,host,port,logpath,wait,delay,cut);
 inetRC.listen();
